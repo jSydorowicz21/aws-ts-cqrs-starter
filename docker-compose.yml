@@ -10,7 +10,9 @@ services:
       - DYNAMODB_ENDPOINT=http://dynamodb:8000
       - NODE_ENV=development
       - IS_OFFLINE=true
-      - TABLE_NAME=aws-ts-starter-${STAGE:-dev}
+      - TABLE_NAME=aws-ts-starter-${STAGE:-dev}-items
+      - ITEM_PRICE_TABLE_NAME=aws-ts-starter-${STAGE:-dev}-item-prices
+      - ITEM_PRICE_UPDATED_FUNCTION=aws-ts-starter-${STAGE:-dev}-itemPriceUpdated
     depends_on:
       - dynamodb-init
   dynamodb:
@@ -31,5 +33,6 @@ services:
       echo 'Waiting for DynamoDB to start...' &&
       sleep 5 &&
       echo 'Creating table...' &&
-      aws dynamodb create-table --table-name aws-ts-starter-${STAGE:-dev} --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://dynamodb:8000 &&
+      aws dynamodb create-table --table-name aws-ts-starter-${STAGE:-dev}-items --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://dynamodb:8000 &&
+      aws dynamodb create-table --table-name aws-ts-starter-${STAGE:-dev}-item-prices --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://dynamodb:8000 &&
       echo 'Table created successfully'"

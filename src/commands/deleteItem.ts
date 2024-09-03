@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import db from "../services/dynamoDB";
+import { commandService } from "../services/commandService";
 
 export const handler: APIGatewayProxyHandler = async (event, context) => {
     if (!event.pathParameters) {
@@ -10,7 +10,7 @@ export const handler: APIGatewayProxyHandler = async (event, context) => {
     }
 
     const { id } = event.pathParameters as { id: string };
-    const result = await db.deleteItem(id);
+    const result = await commandService.deleteItem(id);
 
     if (!result) {
         return {

@@ -1,8 +1,8 @@
-import { handler } from "../../../src/handlers/createItem";
+import { handler } from "../../../src/commands/createItem";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context, Callback } from "aws-lambda";
-import db from "../../../src/services/dynamoDB";
+import { commandService } from "../../../src/services/commandService";
 
-jest.mock("../../../src/services/dynamoDB");
+jest.mock("../../../src/services/commandService");
     
 describe("createItem", () => {
     it("should create an item", async () => {
@@ -14,7 +14,7 @@ describe("createItem", () => {
             updatedAt: "2024-02-14T12:00:00Z"
         };
 
-        (db.createItem as jest.Mock).mockResolvedValue(mockItem);
+        (commandService.createItem as jest.Mock).mockResolvedValue(mockItem);
 
         const event: APIGatewayProxyEvent = {
             body: JSON.stringify({ name: "Test Item", price: 10, description: "This is a test item" }),
@@ -24,7 +24,7 @@ describe("createItem", () => {
         
         expect(result.statusCode).toBe(201);
         expect(JSON.parse(result.body)).toEqual(mockItem);
-        expect(db.createItem).toHaveBeenCalledWith({
+        expect(commandService.createItem).toHaveBeenCalledWith({
             id: expect.any(String),
             name: "Test Item",
             price: 10,
@@ -44,7 +44,7 @@ describe("createItem", () => {
     });
 
     it("should return 500 if item creation fails", async () => {
-        (db.createItem as jest.Mock).mockResolvedValue(null);
+        (commandService.createItem as jest.Mock).mockResolvedValue(null);
 
         const event: APIGatewayProxyEvent = {
             body: JSON.stringify({ name: "Test Item", price: 10, description: "This is a test item" }),

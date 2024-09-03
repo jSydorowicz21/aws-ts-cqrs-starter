@@ -1,8 +1,8 @@
-import { handler } from "../../../src/handlers/getItem";
+import { handler } from "../../../src/queries/getItem";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context, Callback } from "aws-lambda";
-import db from "../../../src/services/dynamoDB";
+import { queryService } from "../../../src/services/queryService";
 
-jest.mock("../../../src/services/dynamoDB");
+jest.mock("../../../src/services/queryService");
     
 describe("getItem", () => {
     it("should get an item", async () => {
@@ -13,7 +13,7 @@ describe("getItem", () => {
             description: "This is a test item",
         };
 
-        (db.getItem as jest.Mock).mockResolvedValue(mockItem);
+        (queryService.getItem as jest.Mock).mockResolvedValue(mockItem);
 
         const event: APIGatewayProxyEvent = {
             pathParameters: { id: "123" },
@@ -23,7 +23,7 @@ describe("getItem", () => {
 
         expect(result.statusCode).toBe(200);
         expect(JSON.parse(result.body)).toEqual(mockItem);
-        expect(db.getItem).toHaveBeenCalledWith("123");
+        expect(queryService.getItem).toHaveBeenCalledWith("123");
     });
 
     it("should return 404 for no items", async () => {
@@ -31,7 +31,7 @@ describe("getItem", () => {
             pathParameters: { id: "123" },
         } as unknown as APIGatewayProxyEvent;
 
-        (db.getItem as jest.Mock).mockResolvedValue(null); 
+        (queryService.getItem as jest.Mock).mockResolvedValue(null); 
 
         const result = await handler(event, {} as Context, {} as Callback) as APIGatewayProxyResult;
         expect(result.statusCode).toBe(404);

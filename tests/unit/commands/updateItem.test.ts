@@ -1,8 +1,8 @@
-import { handler } from "../../../src/handlers/updateItem";
+import { handler } from "../../../src/commands/updateItem";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context, Callback } from "aws-lambda";
-import db from "../../../src/services/dynamoDB";
+import { commandService } from "../../../src/services/commandService";
 
-jest.mock("../../../src/services/dynamoDB");
+jest.mock("../../../src/services/commandService");
 
 describe("updateItem", () => {
     it("should update an item", async () => {
@@ -15,7 +15,7 @@ describe("updateItem", () => {
             updatedAt: "2024-02-14T12:00:00Z"
         };
 
-        (db.updateItem as jest.Mock).mockResolvedValue(mockItem);
+        (commandService.updateItem as jest.Mock).mockResolvedValue(mockItem);
 
         const event: APIGatewayProxyEvent = {
             body: JSON.stringify({ name: "Test Item", price: 10, description: "This is a test item" }),
@@ -26,7 +26,7 @@ describe("updateItem", () => {
 
         expect(result.statusCode).toBe(200);
         expect(JSON.parse(result.body)).toEqual(mockItem);
-        expect(db.updateItem).toHaveBeenCalledWith("123",{
+        expect(commandService.updateItem).toHaveBeenCalledWith("123",{
             name: "Test Item",
             price: 10,
             description: "This is a test item"
@@ -45,14 +45,14 @@ describe("updateItem", () => {
     });
 
     it("should return 404 if item does not exist", async () => {
-        (db.updateItem as jest.Mock).mockResolvedValue(null);
+        (commandService.updateItem as jest.Mock).mockResolvedValue(null);
 
         const event: APIGatewayProxyEvent = {
             body: JSON.stringify({ name: "Test Item", price: 10, description: "This is a test item" }),
             pathParameters: { id: "123" },
         } as unknown as APIGatewayProxyEvent;
 
-        (db.updateItem as jest.Mock).mockResolvedValue(null);
+        (commandService.updateItem as jest.Mock).mockResolvedValue(null);
         const result = await handler(event, {} as Context, {} as Callback) as APIGatewayProxyResult;
 
         expect(result.statusCode).toBe(404);

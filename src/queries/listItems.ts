@@ -1,9 +1,9 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import db from "../services/dynamoDB";
-import { Item } from "../models/item";
+import { queryService } from "../services/queryService";
+import { Item } from "../models/queryModels";
 
 export const handler: APIGatewayProxyHandler = async (event, context) => {
-    const items: Item[] = await db.listItems();
+    const items: Item[] = await queryService.listItems();
 
     if (!items) {
         return {

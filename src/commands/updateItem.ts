@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import db from "../services/dynamoDB";
-import { UpdateItemInput, Item } from "../models/item";
+import { commandService } from "../services/commandService";
+import { UpdateItemInput, Item } from "../models/commandModels";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
     if (!event.pathParameters || !event.body) {
@@ -12,7 +12,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
     const { id } = event.pathParameters as { id: string };
     const updateItemInput : UpdateItemInput = JSON.parse(event.body);
-    const updatedItem: Item | null = await db.updateItem(id, updateItemInput) as Item | null;
+    const updatedItem: Item | null = await commandService.updateItem(id, updateItemInput) as Item | null;
 
     if (!updatedItem) {
         return {

@@ -1,8 +1,8 @@
-import { handler } from "../../../src/handlers/deleteItem";
+import { handler } from "../../../src/commands/deleteItem";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context, Callback } from "aws-lambda";
-import db from "../../../src/services/dynamoDB";
+import { commandService } from "../../../src/services/commandService";
 
-jest.mock("../../../src/services/dynamoDB");
+jest.mock("../../../src/services/commandService");
     
 describe("deleteItem", () => {
     it("should delete an item", async () => {
@@ -15,7 +15,7 @@ describe("deleteItem", () => {
             updatedAt: "2024-02-14T12:00:00Z"
         };
 
-        (db.deleteItem as jest.Mock).mockResolvedValue(mockItem.id);
+        (commandService.deleteItem as jest.Mock).mockResolvedValue(mockItem.id);
 
         const event: APIGatewayProxyEvent = {
             pathParameters: { id: "123" },
@@ -25,7 +25,7 @@ describe("deleteItem", () => {
 
         expect(result.statusCode).toBe(200);
         expect(JSON.parse(result.body)).toEqual(mockItem.id);
-        expect(db.deleteItem).toHaveBeenCalledWith(mockItem.id);
+        expect(commandService.deleteItem).toHaveBeenCalledWith(mockItem.id);
     });
 
     it("should return 400 for invalid request parameters", async () => {
@@ -40,7 +40,7 @@ describe("deleteItem", () => {
     });
 
     it("should return 500 if item deletion fails", async () => {
-        (db.deleteItem as jest.Mock).mockResolvedValue(null);
+        (commandService.deleteItem as jest.Mock).mockResolvedValue(null);
 
         const event: APIGatewayProxyEvent = {
             pathParameters: { id: "123" },

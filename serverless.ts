@@ -14,7 +14,9 @@ const serverlessConfiguration: AWS = {
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
-            TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}",
+            TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-items",
+            ITEM_PRICE_TABLE_NAME: "${self:service}-${opt:stage, self:provider.stage}-item-prices",
+            ITEM_PRICE_UPDATED_FUNCTION: "${self:service}-${opt:stage, self:provider.stage}-itemPriceUpdated",
         },
         iam: {
             role: {
@@ -27,9 +29,10 @@ const serverlessConfiguration: AWS = {
                     "dynamodb:UpdateItem",
                     "dynamodb:DeleteItem",
                     "dynamodb:Scan",
-                    "dynamodb:Query"
+                    "dynamodb:Query",
+                    "lambda:InvokeFunction"
                   ],
-                  Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}"
+                  Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME},arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.ITEM_PRICE_TABLE_NAME}"
                 }
               ]
             }
@@ -56,11 +59,34 @@ const serverlessConfiguration: AWS = {
                 BillingMode: "PAY_PER_REQUEST",
               },
             },
+            ItemPricesTable: {
+              Type: "AWS::DynamoDB::Table",
+              Properties: {
+                TableName: "${self:provider.environment.ITEM_PRICE_TABLE_NAME}",
+                AttributeDefinitions: [
+                  {
+                    AttributeName: "id",
+                    AttributeType: "S",
+                  },
+                ],
+                KeySchema: [
+                  {
+                    AttributeName: "id",
+                    KeyType: "HASH",
+                  },
+                ],
+                BillingMode: "PAY_PER_REQUEST",
+              },
+            },
         },
     },
     functions: {
+        itemPriceUpdated: {
+            handler: "src/events/itemPriceUpdated.handler",
+            events: [],
+        },
         createItem: {
-            handler: "src/handlers/createItem.handler",
+            handler: "src/commands/createItem.handler",
             events: [
                 {
                     http: {
@@ -71,7 +97,7 @@ const serverlessConfiguration: AWS = {
             ]
         },
         getItem: {
-            handler: "src/handlers/getItem.handler",
+            handler: "src/queries/getItem.handler",
             events: [
                 {
                     http: {
@@ -82,7 +108,7 @@ const serverlessConfiguration: AWS = {
             ]
         },
         updateItem: {
-            handler: "src/handlers/updateItem.handler",
+            handler: "src/commands/updateItem.handler",
             events: [
                 {
                     http: {
@@ -93,7 +119,7 @@ const serverlessConfiguration: AWS = {
             ]
         },
         deleteItem: {
-            handler: "src/handlers/deleteItem.handler",
+            handler: "src/commands/deleteItem.handler",
             events: [
                 {
                     http: {
@@ -104,7 +130,7 @@ const serverlessConfiguration: AWS = {
             ]
         },
         listItems: {
-            handler: "src/handlers/listItems.handler",
+            handler: "src/queries/listItems.handler",
             events: [
                 {
                     http: {
@@ -113,7 +139,7 @@ const serverlessConfiguration: AWS = {
                     }
                 }
             ]
-        }
+        },
     },
     package: {
         individually: true,

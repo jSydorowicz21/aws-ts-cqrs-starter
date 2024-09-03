@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { v4 as uuid } from "uuid";
-import db from "../services/dynamoDB";
-import { CreateItemInput, Item } from "../models/item";
+import { commandService } from "../services/commandService";
+import { CreateItemInput, Item} from "../models/commandModels";
 
 export const handler: APIGatewayProxyHandler = async (event, context) => {
     if (!event.body) {
@@ -19,7 +19,7 @@ export const handler: APIGatewayProxyHandler = async (event, context) => {
         price,
         description,
     }
-    const itemReturn: Item | null = await db.createItem(newItem);
+    const itemReturn: Item | null = await commandService.createItem(newItem) as Item | null;
 
     if (!itemReturn) {
         return {
